@@ -1,36 +1,43 @@
 const MAX_LINES = 5000;
 const SESSION_MARK = '===== Session started';
 
-function debugTraceOnLoad()
-{
-    var output = document.getElementById('debug-trace');
-    var state = document.getElementById('trace-state');
-    var lastText = null;
-    var api = window.opener ? window.opener.debugLogApi : null;
+/**
+ * Fills a popup window with the debug trace view. Runs in the opener's realm because a
+ * packaged build has no tabs/debug_trace.html or js file for the popup to load by URL.
+ * @param {Window} win popup whose document already holds tabs/debug_trace.html
+ * @param {object} api debugLogging module
+ * @param {function(): string} getText returns the trace text
+ * @param {function(): void} clearText empties the trace
+ */
+export default function initDebugTrace(win, api, getText, clearText) {
+    const doc = win.document;
+    const output = doc.getElementById('debug-trace');
+    const state = doc.getElementById('trace-state');
+    let lastText = null;
 
     function msg(key, fallback) {
-        return (api && api.msg(key)) || fallback;
+        return api.msg(key) || fallback;
     }
 
     function render(text) {
-        var lines = text.split('\n');
+        let lines = text.split('\n');
         if (lines.length > MAX_LINES) {
             lines = lines.slice(-MAX_LINES);
         }
-        var fragment = document.createDocumentFragment();
-        var shown = 0;
+        const fragment = doc.createDocumentFragment();
+        let shown = 0;
         lines.forEach(function(line) {
             if (line === '') {
                 return;
             }
-            var el = document.createElement('div');
+            const el = doc.createElement('div');
             el.className = line.indexOf(SESSION_MARK) === 0 ? 'session' : 'line';
             el.textContent = line;
             fragment.appendChild(el);
             shown++;
         });
         if (shown === 0) {
-            var empty = document.createElement('div');
+            const empty = doc.createElement('div');
             empty.className = 'empty';
             empty.textContent = msg('debugLogWaiting', 'Waiting for debug messages from the flight controller...');
             fragment.appendChild(empty);
@@ -39,44 +46,41 @@ function debugTraceOnLoad()
         state.textContent = shown + ' ' + msg('debugLogLines', 'lines');
     }
 
-    document.getElementById('trace-clear').addEventListener('click', function() {
-        var opener = window.opener;
-        if (opener && opener.clearDebugTrace) {
-            opener.clearDebugTrace();
-        }
-    });
+    doc.getElementById('trace-clear').addEventListener('click', clearText);
 
-    setInterval(function() {
-        var opener = window.opener;
-        var text = opener && opener.getDebugTrace ? opener.getDebugTrace() : '';
+    // Reopening reuses the window, so drop the timer of the previous view
+    win.clearInterval(win.debugTraceTimer);
+    win.debugTraceTimer = win.setInterval(function() {
+        const text = getText();
         if (text === lastText) {
             return;
         }
         lastText = text;
 
         // Keep following the output unless the user scrolled up to read it
-        var atBottom = output.scrollHeight - output.scrollTop - output.clientHeight < 20;
+        const atBottom = output.scrollHeight - output.scrollTop - output.clientHeight < 20;
         render(text);
         if (atBottom) {
             output.scrollTop = output.scrollHeight;
         }
     }, 100);
 
-    setupLogSettings(api, msg);
+    setupLogSettings(win, api, msg);
 }
 
-function setupLogSettings(api, msg) {
-    var settingsEl = document.getElementById('log-settings');
-    var note = document.getElementById('log-note');
-    var optionsEl = document.getElementById('log-options');
-    var levelEl = document.getElementById('log-level');
-    var topicsButton = document.getElementById('topics-button');
-    var topicsPanel = document.getElementById('topics-panel');
-    var saveButton = document.getElementById('log-save');
-    var enabledRadios = document.querySelectorAll('input[name=log-enabled]');
+function setupLogSettings(win, api, msg) {
+    const doc = win.document;
+    const settingsEl = doc.getElementById('log-settings');
+    const note = doc.getElementById('log-note');
+    const optionsEl = doc.getElementById('log-options');
+    const levelEl = doc.getElementById('log-level');
+    const topicsButton = doc.getElementById('topics-button');
+    const topicsPanel = doc.getElementById('topics-panel');
+    const saveButton = doc.getElementById('log-save');
+    const enabledRadios = doc.querySelectorAll('input[name=log-enabled]');
 
-    document.querySelectorAll('[data-msg]').forEach(function(el) {
-        var text = api && api.msg(el.getAttribute('data-msg'));
+    doc.querySelectorAll('[data-msg]').forEach(function(el) {
+        const text = api.msg(el.getAttribute('data-msg'));
         if (text) {
             el.textContent = text;
         }
@@ -87,25 +91,20 @@ function setupLogSettings(api, msg) {
         note.classList.toggle('error', !!isError);
     }
 
-    if (!api) {
-        settingsEl.style.display = 'none';
-        return;
-    }
-
-    var topicBoxes = api.TOPICS.map(function(name, bit) {
-        var label = document.createElement('label');
-        var box = document.createElement('input');
+    const topicBoxes = api.TOPICS.map(function(name, bit) {
+        const label = doc.createElement('label');
+        const box = doc.createElement('input');
         box.type = 'checkbox';
         box.value = String(bit);
         box.addEventListener('change', updateTopicsLabel);
         label.appendChild(box);
-        label.appendChild(document.createTextNode(name));
+        label.appendChild(doc.createTextNode(name));
         topicsPanel.appendChild(label);
         return box;
     });
 
     api.LEVELS.forEach(function(name, index) {
-        var option = document.createElement('option');
+        const option = doc.createElement('option');
         option.value = String(index);
         option.textContent = name;
         levelEl.appendChild(option);
@@ -118,12 +117,12 @@ function setupLogSettings(api, msg) {
     }
 
     function updateTopicsLabel() {
-        var count = topicBoxes.filter(function(box) { return box.checked; }).length;
+        const count = topicBoxes.filter(function(box) { return box.checked; }).length;
         topicsButton.textContent = (count ? count + ' / ' + topicBoxes.length : msg('debugLogTopicsNone', 'None')) + ' \u25BE';
     }
 
     function loggingOn() {
-        return document.getElementById('log-on').checked;
+        return doc.getElementById('log-on').checked;
     }
 
     function updateOptionsState() {
@@ -135,7 +134,7 @@ function setupLogSettings(api, msg) {
         event.stopPropagation();
         topicsPanel.classList.toggle('open');
     });
-    document.addEventListener('click', function(event) {
+    doc.addEventListener('click', function(event) {
         if (!topicsPanel.contains(event.target)) {
             topicsPanel.classList.remove('open');
         }
@@ -150,7 +149,7 @@ function setupLogSettings(api, msg) {
             setNote(msg('debugLogUnsupported', 'This board does not support logging over MSP'), true);
             return;
         }
-        document.getElementById(current.enabled ? 'log-on' : 'log-off').checked = true;
+        doc.getElementById(current.enabled ? 'log-on' : 'log-off').checked = true;
         levelEl.value = String(current.level);
         topicBoxes.forEach(function(box) {
             box.checked = (current.topics & (1 << Number(box.value))) !== 0;
@@ -161,23 +160,21 @@ function setupLogSettings(api, msg) {
     });
 
     saveButton.addEventListener('click', function() {
-        if (!window.confirm(msg('debugLogConfirm', 'Save the logging settings and reboot the board?'))) {
+        if (!win.confirm(msg('debugLogConfirm', 'Save the logging settings and reboot the board?'))) {
             return;
         }
         saveButton.disabled = true;
         setNote(msg('debugLogSaving', 'Saving, the board will reboot...'));
 
-        var failTimer = setTimeout(function() {
+        const failTimer = win.setTimeout(function() {
             saveButton.disabled = false;
             setNote(msg('debugLogFailed', 'Saving failed'), true);
         }, 15000);
 
         api.save({ enabled: loggingOn(), level: Number(levelEl.value), topics: topicMask() }, function(ok) {
-            clearTimeout(failTimer);
+            win.clearTimeout(failTimer);
             saveButton.disabled = false;
             setNote(ok ? msg('debugLogSaved', 'Saved. Reconnecting after reboot...') : msg('debugLogFailed', 'Saving failed'), !ok);
         });
     });
 }
-
-window.onload = debugTraceOnLoad;
