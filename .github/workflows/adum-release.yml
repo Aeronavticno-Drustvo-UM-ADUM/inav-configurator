@@ -46,6 +46,8 @@ jobs:
   windows-x64:
     needs: version
     runs-on: windows-latest
+    env:
+      ARTIFACT: INAV-Configurator-ADUM_${{ needs.version.outputs.version }}_Windows64.msi
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -66,10 +68,13 @@ jobs:
           on_retry_command: rm -rfv node_modules
       - name: Build Windows x64
         run: yarn run make -- --arch="x64"
-      - uses: actions/upload-artifact@v4
+      - name: Name MSI
+        shell: bash
+        run: mv out/make/wix/x64/*.msi "out/make/wix/x64/$ARTIFACT"
+      - uses: actions/upload-artifact@v7
         with:
-          name: inav-configurator_adum-${{ needs.version.outputs.version }}_Windows64_MSI
-          path: ./out/make/wix/x64/*.msi
+          path: ./out/make/wix/x64/${{ env.ARTIFACT }}
+          archive: false
           if-no-files-found: error
 
   macos-arm64:
