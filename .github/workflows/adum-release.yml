@@ -1,8 +1,8 @@
 name: ADUM Release
 
 # Tag a release commit on release+adum10 as adum-X.Y.Z, where X.Y.Z is the
-# version in package.json. Builds unsigned Linux, Windows and macOS artifacts
-# through ci.yml, the same path as upstream release.yml.
+# version in package.json. Builds three unsigned artifacts: Linux AppImage,
+# Windows x64 MSI and macOS arm64 DMG.
 on:
   push:
     tags:
@@ -11,9 +11,12 @@ on:
 jobs:
   check-version:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
     steps:
       - uses: actions/checkout@v4
       - name: Tag must match package.json version
+        id: version
         run: |
           TAG_VERSION="${GITHUB_REF_NAME#adum-}"
           PKG_VERSION=$(node -p "require('./package.json').version")
@@ -21,9 +24,83 @@ jobs:
             echo "Tag version $TAG_VERSION does not match package.json version $PKG_VERSION"
             exit 1
           fi
+          echo "version=$PKG_VERSION" >> "$GITHUB_OUTPUT"
 
-  build:
+  linux-appimage:
     needs: check-version
-    uses: ./.github/workflows/ci.yml
-    with:
-      require_signing: false
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build AppImage
+        run: ./docker/dev.sh appimage
+      - uses: actions/upload-artifact@v4
+        with:
+          name: inav-configurator_adum-${{ needs.check-version.outputs.version }}_linux_x64_AppImage
+          path: ./out/*.AppImage
+          if-no-files-found: error
+
+  windows-x64:
+    needs: check-version
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: engineerd/configurator@v0.0.10
+        with:
+          name: "Wix Toolset 3.1.4"
+          url: "https://github.com/wixtoolset/wix3/releases/download/wix3141rtm/wix314-binaries.zip"
+          pathInArchive: "/"
+      - name: Install deps
+        uses: nick-fields/retry@v3
+        with:
+          max_attempts: 3
+          retry_on: error
+          command: yarn install --foreground-scripts
+          timeout_minutes: 10
+          on_retry_command: rm -rfv node_modules
+      - name: Build Windows x64
+        run: yarn run make -- --arch="x64"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: inav-configurator_adum-${{ needs.check-version.outputs.version }}_Windows64_MSI
+          path: ./out/make/wix/x64/*.msi
+          if-no-files-found: error
+
+  macos-arm64:
+    needs: check-version
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # Workaround due to a bug in node-gyp: https://github.com/electron/rebuild/issues/1116
+      - name: Install Setuptools
+        run: python3 -m pip install --break-system-packages setuptools
+      - name: Install deps
+        uses: nick-fields/retry@v3
+        with:
+          max_attempts: 3
+          retry_on: error
+          command: yarn install --foreground-scripts
+          timeout_minutes: 10
+          on_retry_command: rm -rfv node_modules
+      - name: Build macOS arm64
+        uses: nick-fields/retry@ce71cc2ab81d554ebbe88c79ab5975992d79ba08 # v3.0.2
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+        with:
+          max_attempts: 3
+          retry_on: error
+          timeout_minutes: 20
+          command: |
+            sudo mdutil -a -i off || true
+            hdiutil detach "/Volumes/INAV-Configurator" -force 2>/dev/null || true
+            yarn run make -- --arch="arm64"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: inav-configurator_adum-${{ needs.check-version.outputs.version }}_MacOS_arm64_DMG
+          path: ./out/make/*arm64*.dmg
+          if-no-files-found: error
