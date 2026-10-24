@@ -170,7 +170,7 @@ spctl --assess --type execute -v "out/INAV Configurator-darwin-arm64/INAV Config
 ## ADUM Releases
 
 1. On `release+adum10`, bump `"version"` in `package.json` (plain `X.Y.Z`, the only form CI and WiX accept) and commit.
-2. Tag that commit `adum-X.Y.Z` and push the tag. `.github/workflows/adum-release.yml` builds three unsigned artifacts with the version in the names: Linux AppImage, Windows x64 MSI and macOS arm64 DMG.
+2. Push the branch. Every push to a `release+*` branch runs `.github/workflows/adum-release.yml`, which builds three unsigned artifacts with `X.Y.Z-<commit>` in the names: Linux AppImage, Windows x64 MSI and macOS arm64 DMG. No tag is needed.
 
 ## Key Files by Importance
 
