@@ -28,14 +28,19 @@ jobs:
   linux-appimage:
     needs: version
     runs-on: ubuntu-24.04
+    env:
+      ARTIFACT: INAV-Configurator-ADUM_${{ needs.version.outputs.version }}_linux_x64.AppImage
     steps:
       - uses: actions/checkout@v4
       - name: Build AppImage
         run: ./docker/dev.sh appimage
-      - uses: actions/upload-artifact@v4
+      - name: Name AppImage
+        run: mv out/*.AppImage "out/$ARTIFACT"
+      # archive: false uploads the file itself, so it downloads as the .AppImage rather than a zip
+      - uses: actions/upload-artifact@v7
         with:
-          name: inav-configurator_adum-${{ needs.version.outputs.version }}_linux_x64_AppImage
-          path: ./out/*.AppImage
+          path: ./out/${{ env.ARTIFACT }}
+          archive: false
           if-no-files-found: error
 
   windows-x64:
@@ -70,6 +75,8 @@ jobs:
   macos-arm64:
     needs: version
     runs-on: macos-15
+    env:
+      ARTIFACT: INAV-Configurator-ADUM_${{ needs.version.outputs.version }}_MacOS_arm64.dmg
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -98,8 +105,10 @@ jobs:
             sudo mdutil -a -i off || true
             hdiutil detach "/Volumes/INAV-Configurator" -force 2>/dev/null || true
             yarn run make -- --arch="arm64"
-      - uses: actions/upload-artifact@v4
+      - name: Name DMG
+        run: mv out/make/*arm64*.dmg "out/make/$ARTIFACT"
+      - uses: actions/upload-artifact@v7
         with:
-          name: inav-configurator_adum-${{ needs.version.outputs.version }}_MacOS_arm64_DMG
-          path: ./out/make/*arm64*.dmg
+          path: ./out/make/${{ env.ARTIFACT }}
+          archive: false
           if-no-files-found: error
