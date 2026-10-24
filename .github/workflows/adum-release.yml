@@ -1,0 +1,29 @@
+name: ADUM Release
+
+# Tag a release commit on release+adum10 as adum-X.Y.Z, where X.Y.Z is the
+# version in package.json. Builds unsigned Linux, Windows and macOS artifacts
+# through ci.yml, the same path as upstream release.yml.
+on:
+  push:
+    tags:
+      - 'adum-*.*.*'
+
+jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Tag must match package.json version
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#adum-}"
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
+            echo "Tag version $TAG_VERSION does not match package.json version $PKG_VERSION"
+            exit 1
+          fi
+
+  build:
+    needs: check-version
+    uses: ./.github/workflows/ci.yml
+    with:
+      require_signing: false

@@ -167,6 +167,12 @@ spctl --assess --type execute -v "out/INAV Configurator-darwin-arm64/INAV Config
   re-run `yarn make -- --arch=<arch> --skip-package` to re-wrap the already
   notarized app in `out/` without another Apple round-trip.
 
+## ADUM Releases
+
+1. On `release+adum10`, bump `"version"` in `package.json` (plain `X.Y.Z`, the only form CI and WiX accept) and commit.
+2. Tag that commit `adum-X.Y.Z` and push the tag. `.github/workflows/adum-release.yml` builds unsigned Linux (deb, rpm, zip), Windows (MSI) and macOS (DMG) artifacts, with the version in the file names.
+3. The Linux AppImage is not built by CI. Run `./docker/dev.sh appimage` locally.
+
 ## Key Files by Importance
 
 | File | Purpose |
