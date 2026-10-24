@@ -1,33 +1,32 @@
 name: ADUM Release
 
-# Tag a release commit on release+adum10 as adum-X.Y.Z, where X.Y.Z is the
-# version in package.json. Builds three unsigned artifacts: Linux AppImage,
-# Windows x64 MSI and macOS arm64 DMG.
+# Every push to a release+* branch (release+adum10 and its feature branches)
+# builds three unsigned artifacts: Linux AppImage, Windows x64 MSI and macOS
+# arm64 DMG. The name carries the package.json version and the commit.
 on:
   push:
-    tags:
-      - 'adum-*.*.*'
+    branches:
+      - 'release\+*'
+
+# A newer push to the same branch supersedes a build that is still running
+concurrency:
+  group: adum-release-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  check-version:
+  version:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.version.outputs.version }}
     steps:
       - uses: actions/checkout@v4
-      - name: Tag must match package.json version
+      - name: Version from package.json and commit
         id: version
         run: |
-          TAG_VERSION="${GITHUB_REF_NAME#adum-}"
-          PKG_VERSION=$(node -p "require('./package.json').version")
-          if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
-            echo "Tag version $TAG_VERSION does not match package.json version $PKG_VERSION"
-            exit 1
-          fi
-          echo "version=$PKG_VERSION" >> "$GITHUB_OUTPUT"
+          echo "version=$(node -p "require('./package.json').version")-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
 
   linux-appimage:
-    needs: check-version
+    needs: version
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -35,12 +34,12 @@ jobs:
         run: ./docker/dev.sh appimage
       - uses: actions/upload-artifact@v4
         with:
-          name: inav-configurator_adum-${{ needs.check-version.outputs.version }}_linux_x64_AppImage
+          name: inav-configurator_adum-${{ needs.version.outputs.version }}_linux_x64_AppImage
           path: ./out/*.AppImage
           if-no-files-found: error
 
   windows-x64:
-    needs: check-version
+    needs: version
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -64,12 +63,12 @@ jobs:
         run: yarn run make -- --arch="x64"
       - uses: actions/upload-artifact@v4
         with:
-          name: inav-configurator_adum-${{ needs.check-version.outputs.version }}_Windows64_MSI
+          name: inav-configurator_adum-${{ needs.version.outputs.version }}_Windows64_MSI
           path: ./out/make/wix/x64/*.msi
           if-no-files-found: error
 
   macos-arm64:
-    needs: check-version
+    needs: version
     runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
@@ -101,6 +100,6 @@ jobs:
             yarn run make -- --arch="arm64"
       - uses: actions/upload-artifact@v4
         with:
-          name: inav-configurator_adum-${{ needs.check-version.outputs.version }}_MacOS_arm64_DMG
+          name: inav-configurator_adum-${{ needs.version.outputs.version }}_MacOS_arm64_DMG
           path: ./out/make/*arm64*.dmg
           if-no-files-found: error
