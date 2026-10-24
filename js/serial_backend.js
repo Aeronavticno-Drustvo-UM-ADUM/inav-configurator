@@ -28,6 +28,7 @@ import ltmDecoder from './ltmDecoder';
 import createLtmProtocolGate from './ltmProtocolGate';
 import mspDeduplicationQueue from './msp/mspDeduplicationQueue';
 import store from './store';
+import debugLogging from './debugLogging';
 import cliTab from '../tabs/cli';
 import javascriptProgrammingTab from '../tabs/javascript_programming';
 
@@ -425,6 +426,7 @@ var SerialBackend = (function () {
             // Reset state BEFORE adding receive listeners to ensure any
             // garbage bytes or boot messages don't corrupt the MSP decoder
             FC.resetState();
+            FC.DEBUG_TRACE = (FC.DEBUG_TRACE || '') + '\n===== Session started ' + new Date().toLocaleTimeString() + ' =====\n';
             MSP.disconnect_cleanup();
             privateScope.ltmProtocolGate.reset();
 
@@ -529,6 +531,8 @@ var SerialBackend = (function () {
             $('#dataflash_wrapper_global').show();
             $('#profiles_wrapper_global').show();
 
+            debugLogging.refreshWarning();
+
             /*
             * Init PIDs bank with a length that depends on the version
             */
@@ -565,6 +569,7 @@ var SerialBackend = (function () {
         $('#dataflash_wrapper_global').hide();
         $('#profiles_wrapper_global').hide();
         $('#quad-status_wrapper').hide();
+        debugLogging.hideWarning();
 
         //updateFirmwareVersion();
     }

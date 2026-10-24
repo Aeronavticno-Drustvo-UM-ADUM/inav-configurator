@@ -784,6 +784,8 @@ var mspHelper = (function () {
                 console.log('Settings Saved in EEPROM');
                 break;
             case MSPCodes.MSP_DEBUGMSG:
+                // Receiving trace output proves logging is on, whatever the saved serial config says
+                document.getElementById('logging-warning')?.style.setProperty('display', 'block');
                 for (var ii = 0; ii < data.byteLength; ii++) {
                     var c = data.readU8();
                     if (c == 0) {

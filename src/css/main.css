@@ -2586,3 +2586,18 @@ ol li {
     border-radius: 3px;
     border: 1px solid #000000;
 }
+
+/* Visible on every tab while the board streams its debug log over MSP */
+.logging-warning {
+    position: fixed;
+    top: 0.4em;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    padding: 0.3em 1em;
+    color: #fff;
+    background-color: #e08a1e;
+    border-radius: 3px;
+    font-family: 'open_sanssemibold', Arial, serif;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}

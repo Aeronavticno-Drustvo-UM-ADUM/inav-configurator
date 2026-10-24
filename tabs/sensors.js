@@ -11,6 +11,7 @@ import interval from './../js/intervals';
 import i18n from './../js/localization';
 import BitHelper from './../js/bitHelper';
 import store from '../js/store';
+import debugLogging from '../js/debugLogging';
 
 const sensorsTab = {};
 sensorsTab.initialize = function (callback) {
@@ -550,8 +551,11 @@ sensorsTab.initialize = function (callback) {
         }
 
         $("a.debug-trace").on('click', function () {
-           var debugWin = window.open("tabs/debug_trace.html", "receiver_msp", "width=500,height=510,menubar=no,contextIsolation=no,nodeIntegration=yes");
-           debugWin.window.getDebugTrace = function () { return FC.DEBUG_TRACE || ''; };
+           // The popup reads the trace through window.opener; assigning to its window right after open() is lost when it navigates
+           window.getDebugTrace = function () { return FC.DEBUG_TRACE || ''; };
+           window.clearDebugTrace = function () { FC.DEBUG_TRACE = ''; };
+           window.debugLogApi = debugLogging;
+           window.open("tabs/debug_trace.html", "receiver_msp", "width=560,height=600,menubar=no,contextIsolation=no,nodeIntegration=yes");
         });
 
         GUI.content_ready(callback);

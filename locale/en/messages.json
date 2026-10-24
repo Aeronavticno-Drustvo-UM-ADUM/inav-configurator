@@ -2703,6 +2703,60 @@
     "gpsEPV": {
         "message": "EPV:"
     },
+    "loggingEnabledWarning": {
+        "message": "Debug logging is enabled - this can reduce flight controller performance. Turn it off in Sensors, Debug Trace."
+    },
+    "debugLogEnable": {
+        "message": "Logging"
+    },
+    "debugLogOff": {
+        "message": "Off"
+    },
+    "debugLogOn": {
+        "message": "On"
+    },
+    "debugLogLevel": {
+        "message": "Level"
+    },
+    "debugLogTopics": {
+        "message": "Topics"
+    },
+    "debugLogTopicsNone": {
+        "message": "None"
+    },
+    "debugLogSave": {
+        "message": "Save"
+    },
+    "debugLogPort": {
+        "message": "Log port"
+    },
+    "debugLogRebootNote": {
+        "message": "Saving writes to the board and reboots it. Logging can reduce performance."
+    },
+    "debugLogConfirm": {
+        "message": "Save the logging settings and reboot the board?"
+    },
+    "debugLogSaving": {
+        "message": "Saving, the board will reboot..."
+    },
+    "debugLogSaved": {
+        "message": "Saved. Reconnecting after reboot..."
+    },
+    "debugLogFailed": {
+        "message": "Saving failed"
+    },
+    "debugLogUnsupported": {
+        "message": "This board does not support logging over MSP"
+    },
+    "debugLogWaiting": {
+        "message": "Waiting for debug messages from the flight controller..."
+    },
+    "debugLogClear": {
+        "message": "Clear"
+    },
+    "debugLogLines": {
+        "message": "lines"
+    },
     "gpsColShip": {
         "message": "Ship GPS"
     },
