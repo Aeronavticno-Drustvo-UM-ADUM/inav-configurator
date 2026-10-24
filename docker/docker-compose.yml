@@ -20,9 +20,6 @@ services:
       - home:/home/dev
       - /tmp/.X11-unix:/tmp/.X11-unix
       - "${XAUTH_FILE:-/dev/null}:/tmp/.Xauthority:ro"
-    # Real flight controller (serial) and DFU flashing; comment out if the device paths don't exist
-    devices:
-      - /dev/bus/usb:/dev/bus/usb
     group_add:
       - "${DIALOUT_GID:-20}"
 

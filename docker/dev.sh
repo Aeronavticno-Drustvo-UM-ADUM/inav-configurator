@@ -19,7 +19,11 @@ export DISPLAY=${DISPLAY:-:0}
 export XAUTH_FILE=${XAUTHORITY:-$HOME/.Xauthority}
 [ -e "$XAUTH_FILE" ] || XAUTH_FILE=/dev/null
 
-dc() { docker compose -f docker-compose.yml "$@"; }
+# USB passthrough (real flight controller, DFU) only where the host has /dev/bus/usb, not on CI runners
+COMPOSE_FILES=(-f docker-compose.yml)
+[ -d /dev/bus/usb ] && COMPOSE_FILES+=(-f docker-compose.usb.yml)
+
+dc() { docker compose "${COMPOSE_FILES[@]}" "$@"; }
 run() { dc run --rm app "$@"; }
 
 # Named volumes start root-owned
