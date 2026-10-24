@@ -6,26 +6,31 @@ const tcp = {
     _socket: null,
     _id: 1,
     connect: function(host, port, window, setNoDelay = true) {
+        // A previous socket left open keeps the single-client server (e.g. SITL) busy
+        this.close();
+
         return new Promise(resolve => {     
             try {
-                this._socket = net.connect({host: host, port: port}, () => {    
-                    this._socket.setNoDelay(setNoDelay); 
+                const socket = net.connect({host: host, port: port}, () => {    
+                    socket.setNoDelay(setNoDelay); 
                 });
+                this._socket = socket;
 
-                this._socket.on('error', error => {
-                    if (!window.isDestroyed()) {
+                // Events from a replaced socket must not reach the current connection
+                socket.on('error', error => {
+                    if (socket === this._socket && !window.isDestroyed()) {
                         window.webContents.send('tcpError', error); 
                     }
                 });
 
-                this._socket.on('end', () => {
-                    if (!window.isDestroyed()) {
+                socket.on('end', () => {
+                    if (socket === this._socket && !window.isDestroyed()) {
                         window.webContents.send('tcpEnd');
                     }
                 });
 
-                this._socket.on('data', buffer => {
-                    if (!window.isDestroyed()) {
+                socket.on('data', buffer => {
+                    if (socket === this._socket && !window.isDestroyed()) {
                         window.webContents.send('tcpData', buffer);
                     }
                 });
@@ -37,10 +42,12 @@ const tcp = {
         });
     },
     close: function() {
-        if (this._socket && !this._socket.destroyed) {
-            this._socket.end();
-        }
+        const socket = this._socket;
         this._socket = null;
+        // destroy(), not end(): end() half-closes and the socket lingers until the peer closes too
+        if (socket && !socket.destroyed) {
+            socket.destroy();
+        }
     },
     send: function(data) {
         return new Promise(resolve => {  
