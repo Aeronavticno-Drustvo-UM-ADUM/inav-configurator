@@ -1873,6 +1873,25 @@ dialog {
     font-size: 10px;
 }
 
+.fixdgps, .fixrtkfloat, .fixrtkfixed {
+    padding: 2px 5px;
+    border-radius: 3px;
+    color: #fff;
+    font-size: 10px;
+}
+
+.fixdgps {
+    background-color: #1d9bac;
+}
+
+.fixrtkfloat {
+    background-color: #e08a1e;
+}
+
+.fixrtkfixed {
+    background-color: #1d63ac;
+}
+
 /* Dataflash element styling*/
 
 #dataflash_wrapper_global {

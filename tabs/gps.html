@@ -107,34 +107,49 @@
                         <div class="spacer_box_title" data-i18n="gpsHead"></div>
                     </div>
                     <div class="spacer_box GPS_info">
-                        <table class="cf_table">
+                        <table class="cf_table gps_cols">
                             <tr>
-                                <td style="width: 85px" data-i18n="gpsFix"></td>
-                                <td class="fix" data-i18n="gpsFixNone"></td>
+                                <td data-i18n="gpsFix"></td>
+                                <td class="fix" colspan="2" data-i18n="gpsFixNone"></td>
+                            </tr>
+                            <tr class="rtk_col is-hidden">
+                                <td data-i18n="gpsNavSource"></td>
+                                <td class="navSource" colspan="2">-</td>
+                            </tr>
+                            <tr class="rtk_col is-hidden gps_col_head">
+                                <td></td>
+                                <td data-i18n="gpsColShip"></td>
+                                <td data-i18n="gpsColRtk"></td>
                             </tr>
                             <tr>
                                 <td data-i18n="gpsAltitude"></td>
                                 <td class="alt">0 m</td>
+                                <td class="rtk_col is-hidden rtkAlt">-</td>
                             </tr>
                             <tr>
                                 <td data-i18n="gpsLat"></td>
                                 <td class="lat">0.0000 deg</td>
+                                <td class="rtk_col is-hidden rtkLat">-</td>
                             </tr>
                             <tr>
                                 <td data-i18n="gpsLon"></td>
                                 <td class="lon">0.0000 deg</td>
+                                <td class="rtk_col is-hidden rtkLon">-</td>
                             </tr>
                             <tr>
                                 <td data-i18n="gpsSpeed"></td>
                                 <td class="speed">0 cm/s</td>
+                                <td class="rtk_col is-hidden rtkSpeed">-</td>
                             </tr>
                             <tr>
                                 <td data-i18n="gpsSats"></td>
                                 <td class="sats">0</td>
+                                <td class="rtk_col is-hidden rtkSats">-</td>
                             </tr>
                             <tr class="noboarder">
                                 <td data-i18n="gpsDistToHome"></td>
                                 <td class="distToHome"></td>
+                                <td class="rtk_col is-hidden"></td>
                             </tr>
                         </table>
                     </div>
@@ -144,34 +159,87 @@
                         <div class="spacer_box_title" data-i18n="gpsStatHead"></div>
                     </div>
                     <div class="spacer_box GPS_stat">
-                        <table class="cf_table">
+                        <table class="cf_table gps_cols">
+                            <tr class="rtk_col is-hidden gps_col_head">
+                                <td></td>
+                                <td data-i18n="gpsColShip"></td>
+                                <td data-i18n="gpsColRtk"></td>
+                            </tr>
                             <tr>
                                 <td data-i18n="gpsHDOP"></td>
                                 <td class="hdop"></td>
+                                <td class="rtk_col is-hidden rtkHdop">-</td>
                             </tr>
                             <tr>
                                 <td data-i18n="gpsEPH"></td>
                                 <td class="eph">0</td>
+                                <td class="rtk_col is-hidden rtkEph">-</td>
                             </tr>
                             <tr>
                                 <td data-i18n="gpsEPV"></td>
                                 <td class="epv">0</td>
+                                <td class="rtk_col is-hidden rtkEpv">-</td>
                             </tr>
                             <tr>
                                 <td data-i18n="gpsMessageRate"></td>
                                 <td class="rate">0</td>
+                                <td class="rtk_col is-hidden rtkRate">-</td>
                             </tr>
                             <tr>
-                                <td style="width: 85px" data-i18n="gpsTotalMessages"></td>
+                                <td data-i18n="gpsTotalMessages"></td>
                                 <td class="messages">0</td>
+                                <td class="rtk_col is-hidden rtkFrames">-</td>
                             </tr>
                             <tr>
                                 <td data-i18n="gpsErrors"></td>
                                 <td class="errors">0</td>
+                                <td class="rtk_col is-hidden"></td>
                             </tr>
                             <tr class="noboarder">
                                 <td data-i18n="gpsTimeouts"></td>
                                 <td class="timeouts">0</td>
+                                <td class="rtk_col is-hidden"></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                <div class="gui_box grey rtk_col is-hidden">
+                    <div class="gui_box_titlebar">
+                        <div class="spacer_box_title" data-i18n="gpsRtkBlendHead"></div>
+                    </div>
+                    <div class="spacer_box RTK_blend">
+                        <table class="cf_table">
+                            <tr>
+                                <td data-i18n="gpsRtkState"></td>
+                                <td class="rtkState">-</td>
+                            </tr>
+                            <tr>
+                                <td data-i18n="gpsRtkWeight"></td>
+                                <td class="rtkWeight">0 %</td>
+                            </tr>
+                            <tr>
+                                <td data-i18n="gpsRtkReject"></td>
+                                <td class="rtkReject">-</td>
+                            </tr>
+                            <tr>
+                                <td data-i18n="gpsRtkHealthy"></td>
+                                <td class="rtkHealthy">-</td>
+                            </tr>
+                            <tr>
+                                <td data-i18n="gpsRtkMessages"></td>
+                                <td class="rtkMessages">-</td>
+                            </tr>
+                            <tr>
+                                <td data-i18n="gpsRtkVelDiff"></td>
+                                <td class="rtkVelDiff">-</td>
+                            </tr>
+                            <tr>
+                                <td data-i18n="gpsRtkPosDiff"></td>
+                                <td class="rtkPosDiff">-</td>
+                            </tr>
+                            <tr class="noboarder">
+                                <td data-i18n="gpsRtkAltDiff"></td>
+                                <td class="rtkAltDiff">-</td>
                             </tr>
                         </table>
                     </div>

@@ -2703,6 +2703,42 @@
     "gpsEPV": {
         "message": "EPV:"
     },
+    "gpsColShip": {
+        "message": "Ship GPS"
+    },
+    "gpsColRtk": {
+        "message": "RTK GPS"
+    },
+    "gpsNavSource": {
+        "message": "Nav source:"
+    },
+    "gpsRtkBlendHead": {
+        "message": "RTK statistics"
+    },
+    "gpsRtkState": {
+        "message": "RTK state:"
+    },
+    "gpsRtkWeight": {
+        "message": "RTK weight:"
+    },
+    "gpsRtkReject": {
+        "message": "Last reject:"
+    },
+    "gpsRtkHealthy": {
+        "message": "Healthy for:"
+    },
+    "gpsRtkMessages": {
+        "message": "Received / accepted / rejected:"
+    },
+    "gpsRtkVelDiff": {
+        "message": "Velocity vs GPS:"
+    },
+    "gpsRtkPosDiff": {
+        "message": "Position vs GPS:"
+    },
+    "gpsRtkAltDiff": {
+        "message": "Altitude vs GPS:"
+    },
     "gpsSignalStr": {
         "message": "Signal Strength"
     },

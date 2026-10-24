@@ -614,6 +614,8 @@ gpsTab.initialize = function (callback) {
             $('.GPS_stat td.epv').text((FC.GPS_DATA.epv / 100).toFixed(2) + ' m');
             $('.GPS_stat td.hdop').text((FC.GPS_DATA.hdop / 100).toFixed(2));
 
+            update_rtk_ui();
+
             //Update map
             if (FC.GPS_DATA.fix >= 2) {
 
@@ -655,6 +657,58 @@ gpsTab.initialize = function (callback) {
                 iconGeometry.setCoordinates(center);
 
             }
+        }
+
+        function update_rtk_ui() {
+            const rtk = FC.GPS_DATA.rtk;
+            $('.rtk_col').toggleClass('is-hidden', !rtk);
+
+            if (!rtk) {
+                return;
+            }
+
+            // Names follow the firmware enums in gps_adum_rtk.h and MAVLink GPS_FIX_TYPE
+            const states = ['Disabled', 'No data', 'Rejected', 'Validating', 'Fading in', 'Active'];
+            const rejects = ['None', 'No primary GPS reference', 'Fix type too low', 'Accuracy too poor', 'Position out of range',
+                'Timestamp frozen', 'Velocity mismatch', 'Position mismatch', 'Altitude mismatch', 'Stream stopped'];
+            const unknown = '-';
+
+            const received = rtk.hasSample && rtk.frames > 0;
+            if (rtk.hasSample) {
+                $('.GPS_info td.rtkSats').text(received && rtk.numSat !== 255 ? rtk.numSat : unknown);
+                $('.GPS_info td.rtkLat').text(received ? (rtk.lat / 10000000).toFixed(4) + ' deg' : unknown);
+                $('.GPS_info td.rtkLon').text(received ? (rtk.lon / 10000000).toFixed(4) + ' deg' : unknown);
+                $('.GPS_info td.rtkAlt').text(received ? (rtk.alt / 100).toFixed(1) + ' m' : unknown);
+                $('.GPS_info td.rtkSpeed').text(received ? rtk.speed + ' cm/s' : unknown);
+                $('.GPS_stat td.rtkHdop').text(received && rtk.hdop !== 65535 ? (rtk.hdop / 100).toFixed(2) : unknown);
+                $('.GPS_stat td.rtkEph').text(received ? (rtk.eph / 100).toFixed(3) + ' m' : unknown);
+                $('.GPS_stat td.rtkEpv').text(received ? (rtk.epv / 100).toFixed(3) + ' m' : unknown);
+            }
+            $('.GPS_stat td.rtkRate').text(rtk.streamHzX10 > 0 ? (rtk.streamHzX10 / 10).toFixed(1) + ' Hz' : (received ? 'stopped' : unknown));
+            $('.GPS_stat td.rtkFrames').text(rtk.frames + (rtk.hasSample && !rtk.processing ? ' (GPS task stopped)' : ''));
+
+            let navSource = 'Ship GPS';
+            if (rtk.weightPct >= 100) {
+                navSource = 'RTK GPS';
+                const fixIcons = [
+                    ['fixnone', 'No fix'], ['fixnone', 'No fix'], ['fix2d', 'RTK 2D'], ['fix3d', 'RTK 3D'],
+                    ['fixdgps', 'DGPS'], ['fixrtkfloat', 'RTK float'], ['fixrtkfixed', 'RTK fixed'],
+                    ['fix3d', 'Static'], ['fix3d', 'PPP']];
+                const [cls, text] = fixIcons[rtk.fixType] ?? ['fixnone', String(rtk.fixType)];
+                $('.GPS_info td.fix').html('<span class="' + cls + '">' + text + '</span>');
+            } else if (rtk.weightPct > 0) {
+                navSource = 'Blending to RTK (' + rtk.weightPct + ' %)';
+            }
+            $('.GPS_info td.navSource').text(navSource);
+
+            $('.RTK_blend td.rtkState').text(states[rtk.state] ?? rtk.state);
+            $('.RTK_blend td.rtkWeight').text(rtk.weightPct + ' %');
+            $('.RTK_blend td.rtkReject').text(rejects[rtk.lastReject] ?? rtk.lastReject);
+            $('.RTK_blend td.rtkHealthy').text((rtk.healthyMs / 1000).toFixed(1) + ' / ' + (rtk.requiredMs / 1000).toFixed(1) + ' s');
+            $('.RTK_blend td.rtkMessages').text(rtk.received + ' / ' + rtk.accepted + ' / ' + rtk.rejected);
+            $('.RTK_blend td.rtkVelDiff').text(rtk.velDiffCms + ' cm/s (gate ' + rtk.velGateCms + ', peak ' + rtk.peakVelDiffCms + ')');
+            $('.RTK_blend td.rtkPosDiff').text(rtk.posDiffCm + ' cm (gate ' + rtk.posGateCm + ', peak ' + rtk.peakPosDiffCm + ')');
+            $('.RTK_blend td.rtkAltDiff').text(rtk.altDiffCm + ' cm (gate ' + rtk.altGateCm + ', peak ' + rtk.peakAltDiffCm + ')');
         }
 
         function update_adsb_ui() {

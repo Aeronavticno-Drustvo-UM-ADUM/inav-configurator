@@ -271,6 +271,52 @@ var mspHelper = (function () {
                 } else {
                     FC.GPS_DATA.hwVersion = 0;
                 }
+                // ADUM firmware appends the RTK-GPS (MAVLink) status after hwVersion
+                if (data.byteLength >= 62) {
+                    const rtk = {
+                        state: data.getUint8(21),
+                        lastReject: data.getUint8(22),
+                        weightPct: data.getUint8(23),
+                        streamHzX10: data.getUint16(24, true),
+                        ageMs: data.getUint16(26, true),
+                        healthyMs: data.getUint16(28, true),
+                        requiredMs: data.getUint16(30, true),
+                        received: data.getUint32(32, true),
+                        accepted: data.getUint32(36, true),
+                        rejected: data.getUint32(40, true),
+                        velDiffCms: data.getUint16(44, true),
+                        velGateCms: data.getUint16(46, true),
+                        posDiffCm: data.getUint16(48, true),
+                        posGateCm: data.getUint16(50, true),
+                        altDiffCm: data.getUint16(52, true),
+                        altGateCm: data.getUint16(54, true),
+                        peakVelDiffCms: data.getUint16(56, true),
+                        peakPosDiffCm: data.getUint16(58, true),
+                        peakAltDiffCm: data.getUint16(60, true),
+                        frames: 0,
+                        frameAgeMs: 0,
+                        processing: false,
+                        hasSample: false
+                    };
+                    if (data.byteLength >= 91) {
+                        rtk.frames = data.getUint32(62, true);
+                        rtk.frameAgeMs = data.getUint16(66, true);
+                        rtk.processing = data.getUint8(68) !== 0;
+                        rtk.hasSample = true;
+                        rtk.fixType = data.getUint8(69);
+                        rtk.numSat = data.getUint8(70);
+                        rtk.hdop = data.getUint16(71, true);
+                        rtk.eph = data.getUint16(73, true);
+                        rtk.epv = data.getUint16(75, true);
+                        rtk.lat = data.getInt32(77, true);
+                        rtk.lon = data.getInt32(81, true);
+                        rtk.alt = data.getInt32(85, true);
+                        rtk.speed = data.getUint16(89, true);
+                    }
+                    FC.GPS_DATA.rtk = rtk;
+                } else {
+                    FC.GPS_DATA.rtk = null;
+                }
                 break;
             case MSPCodes.MSP2_ADSB_VEHICLE_LIST:
                 var byteOffsetCounter = 0;

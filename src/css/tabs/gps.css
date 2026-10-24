@@ -261,3 +261,21 @@ td.adsbVehicleList {
     padding: 8px;
     color: #323232;
 }
+
+.tab-gps .gps_cols {
+    width: 100%;
+    table-layout: fixed;
+}
+
+.tab-gps .gps_cols td {
+    text-align: left;
+    padding-right: 1.5em;
+}
+
+.tab-gps .gps_cols .gps_col_head td {
+    font-weight: bold;
+    text-align: center;
+    color: #fff;
+    background-color: #6a6a6a;
+    border-bottom: 0;
+}

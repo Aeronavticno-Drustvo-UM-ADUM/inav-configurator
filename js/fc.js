@@ -344,7 +344,8 @@ var FC = {
             errors: 0,
             timeouts: 0,
             packetCount: 0,
-            hwVersion: 0
+            hwVersion: 0,
+            rtk: null
         };
 
         this.ADSB_VEHICLES = {
