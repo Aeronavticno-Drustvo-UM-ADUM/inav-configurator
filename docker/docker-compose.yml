@@ -1,0 +1,31 @@
+services:
+  app:
+    image: inav-configurator-dev
+    build:
+      context: .
+      dockerfile: Dockerfile
+    user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
+    working_dir: /app
+    # host network: the configurator reaches a SITL on the host at tcp://127.0.0.1:5760
+    network_mode: host
+    # Docker's default 64MB /dev/shm crashes Chromium renderers (white window)
+    shm_size: 1gb
+    environment:
+      LIBGL_ALWAYS_SOFTWARE: "1"
+      DISPLAY: "${DISPLAY:-:0}"
+      XAUTHORITY: /tmp/.Xauthority
+    volumes:
+      - ..:/app
+      - node_modules:/app/node_modules
+      - home:/home/dev
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - "${XAUTH_FILE:-/dev/null}:/tmp/.Xauthority:ro"
+    # Real flight controller (serial) and DFU flashing; comment out if the device paths don't exist
+    devices:
+      - /dev/bus/usb:/dev/bus/usb
+    group_add:
+      - "${DIALOUT_GID:-20}"
+
+volumes:
+  node_modules:
+  home:
